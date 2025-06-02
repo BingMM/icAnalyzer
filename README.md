@@ -24,7 +24,7 @@ The main purpose of this codebase is to document the data processing procedure. 
 
 mamba activate your_environment
 
-git clone https://github.com/yourusername/icBuilder.git
+git clone https://github.com/BingMM/icBuilder.git
 
 cd icBuilder
 
