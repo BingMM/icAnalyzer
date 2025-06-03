@@ -15,11 +15,8 @@ The main purpose of this codebase is to document the data processing procedure. 
 ## Installation
 
 mamba activate your_environment
-
 git clone https://github.com/BingMM/icAnalyzer.git
-
 cd icAnalyzer
-
 pip install -e .
 
 ## License
