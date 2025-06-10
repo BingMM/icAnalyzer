@@ -27,16 +27,27 @@ for orbit in tqdm(o, total=len(o)):
 
 #%%
 
-assert H.shape == P.shape == dH.shape == dP.shape
-N = H.shape[0]
+start_from_safe_file = True
+
+#%%
+
+assert len(H) == len(dH) == len(P) == len(dP)
+N = len(H)
 
 seq_size = 5
 
-results = []
+if start_from_safe_file:
+    q = np.load('/home/bing/Dropbox/work/temp_storage/seq_classification_results.npz')
+    orbits = q['orbits']
+    indices = q['indices']
+    labels = q['labels']
+    results = [(a,b,c) for (a,b,c) in zip(orbits, indices, labels)]
+else:
+    results = []
 
 # -- Classification loop function --
-def classify_images(H, P, dH, dP):
-    classified = []
+def classify_images(H, P, dH, dP, classified = []):
+    #classified = []
     keep_going = True
 
     cb, cg = 0, 0
@@ -53,33 +64,28 @@ def classify_images(H, P, dH, dP):
         start, stop = idt - seq_size, idt + seq_size
         
         idt = np.arange(start, stop+1)
-        
-        
-        
-        
-        
 
-
-        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+        fig, axs = plt.subplots(4, 10, figsize=(20, 15))
         
-        im = axs[0,0].imshow(H[idx], cmap='viridis', vmin=0, vmax=40)
-        fig.colorbar(im, ax=axs[0,0])
-        axs[0,0].set_title(f'Hall - Index {idx}')
+        for ax, idi in zip(axs[0, :], idt):
+            ax.imshow(Hs[idi], vmin=0, vmax=40)
+            ax.set_title(f'Hall - Index {idi}')
         
-        im = axs[0,1].imshow(P[idx], cmap='viridis', vmin=0, vmax=10)
-        fig.colorbar(im, ax=axs[0,1])
-        axs[0,1].set_title(f'Pedersen - Index {idx}')
+        for ax, idi in zip(axs[1, :], idt):
+            ax.imshow(dHs[idi], vmin=0, vmax=65)
+            ax.set_title(f'Hall std - Index {idi}')
+            
+        for ax, idi in zip(axs[2, :], idt):
+            ax.imshow(Ps[idi], vmin=0, vmax=10)
+            ax.set_title(f'Pedersen - Index {idi}')
         
-        im = axs[1,0].imshow(dH[idx], cmap='viridis', vmin=0, vmax=65)
-        fig.colorbar(im, ax=axs[1,0])
-        axs[1,0].set_title(f'Hall std - Index {idx}')
-        
-        im = axs[1,1].imshow(dP[idx], cmap='viridis', vmin=0, vmax=65)
-        fig.colorbar(im, ax=axs[1,1])
-        axs[1,1].set_title(f'Pedersen std - Index {idx}')
+        for ax, idi in zip(axs[3, :], idt):
+            ax.imshow(dPs[idi], vmin=0, vmax=65)
+            ax.set_title(f'Pedersen std - Index {idi}')
         
         for ax in axs.flatten():
             ax.axis('off')
+            
         plt.suptitle(f"Press 1 (bad), 9 (good), 5 (save and exit), #bad: {cb}, #good: {cg}")
         plt.tight_layout()
 
@@ -90,38 +96,40 @@ def classify_images(H, P, dH, dP):
                 pressed.append(event.key)
                 plt.close()
 
+        plt.savefig('/home/bing/Dropbox/work/temp_storage/seq_class.png', bbox_inches='tight')
         fig.canvas.mpl_connect('key_press_event', on_key)
         plt.show(block=True)
 
         if pressed:
             key = pressed[0]
             if key == '1':
-                classified.append((idx, 0))
+                classified.append((ids, idt[0], 0))
             elif key == '9':
-                classified.append((idx, 1))
+                classified.append((ids, idt[0], 1))
             elif key == '5':
                 keep_going = False
                 print("Stopping and saving...")
 
-        cb = np.sum(np.array(classified)[:, 1] == 0)
-        cg = np.sum(np.array(classified)[:, 1] == 1)
+        cb = np.sum(np.array(classified)[:, -1] == 0)
+        cg = np.sum(np.array(classified)[:, -1] == 1)
 
     return classified
 
 # -- Run the classification session --
-results = classify_images(H, P, dH, dP)
+results = classify_images(H, P, dH, dP, classified=results)
 
 # -- Save the results --
 if results:
-    indices, labels = zip(*results)
-    np.savez('/home/bing/Dropbox/work/temp_storage/classification_results.npz', indices=np.array(indices), labels=np.array(labels))
+    orbits, indices, labels = zip(*results)
+    np.savez('/home/bing/Dropbox/work/temp_storage/seq_classification_results.npz', orbits = np.array(orbits), indices=np.array(indices), labels=np.array(labels))
     print(f"Saved {len(results)} classifications to 'classification_results.npz'")
 else:
     print("No classifications made.")
 
 #%%
 
-q = np.load('/home/bing/Dropbox/work/temp_storage/classification_results.npz')
+q = np.load('/home/bing/Dropbox/work/temp_storage/seq_classification_results.npz')
+orbits = q['orbits']
 indices = q['indices']
 labels = q['labels']
 
