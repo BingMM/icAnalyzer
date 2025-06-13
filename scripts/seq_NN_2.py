@@ -165,7 +165,16 @@ for iax, i in enumerate(ii):
 for ax in axs.flatten():
     ax.axis('off')
     
+#%% Plot bad examples
 
+ii = np.random.randint(0, len(predicted_bad) - 1, 10)
+fig, axs = plt.subplots(10, 10, figsize=(15,15))
+for iax, i in enumerate(ii):
+    orbit, idt = predicted_bad[i]
+    for jax in range(10):
+        axs[iax, jax].imshow(P[orbit][idt+jax], vmin=0, vmax=10)
+for ax in axs.flatten():
+    ax.axis('off')
 
 
 
