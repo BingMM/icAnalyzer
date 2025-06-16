@@ -154,6 +154,12 @@ fig.colorbar(im, ax=axs.ravel().tolist())
 plt.tight_layout()
 plt.show()
 '''
+
+#%%
+
+np.save('/home/bing/Dropbox/work/code/repos/icAnalyzer/data/predicted_good.npy', np.array(predicted_good))
+np.save('/home/bing/Dropbox/work/code/repos/icAnalyzer/data/predicted_bad.npy', np.array(predicted_bad))
+
 #%% Plot good examples
 
 ii = np.random.randint(0, len(predicted_good) - 1, 10)
